@@ -17,11 +17,6 @@ app.use("/comments", commentRouter);
 
 // Error-handling middleware
 app.use((err, req, res, next) => {
-  if (err.status === 400 && (err instanceof SyntaxError || err.type === 'entity.parse.failed')) {
-    return res.status(400).json({
-      error: "Cú pháp JSON không hợp lệ! Vui lòng kiểm tra lại Body trong Postman (xóa các dấu ngoặc kép bọc ngoài, dấu phẩy thừa hoặc ô trống).",
-    });
-  }
 
   console.error(err.stack);
 
