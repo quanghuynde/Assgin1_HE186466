@@ -1,38 +1,36 @@
 const express = require("express");
 const router = express.Router();
-const fs = require("fs");
+const fs = require("fs").promises;
 const path = require("path");
 
 const dataPath = path.join(__dirname, "../data.json");
 
-const readData = () => {
-    const rawData = fs.readFileSync(dataPath, "utf-8");
+
+const readData = async () => {
+    const rawData = await fs.readFile(dataPath, "utf-8");
     return JSON.parse(rawData);
 };
 
 
-const writeData = (data) => {
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), "utf-8");
+const writeData = async (data) => {
+    await fs.writeFile(dataPath, JSON.stringify(data, null, 2), "utf-8");
 };
 
-
-//1. GET /articles 
-router.get("/", (req, res, next) => {
+// 1. GET /articles 
+router.get("/", async (req, res, next) => {
     try {
-        const data = readData();
+        const data = await readData();
         res.json(data.articles || []);
     } catch (err) {
         next(err);
     }
 });
 
-
-
-//2. GET /articles/:id, GET /article/1, GET /article/999
-router.get("/:id", (req, res, next) => {
+// 2. GET /articles/:id
+router.get("/:id", async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
-        const data = readData();
+        const data = await readData();
         const article = (data.articles || []).find((a) => a.id === id);
 
         if (!article) {
@@ -47,12 +45,11 @@ router.get("/:id", (req, res, next) => {
     }
 });
 
-
-//3. GET /articles/:id/comments
-router.get("/:id/comments", (req, res, next) => {
+// 3. GET /articles/:id/comments
+router.get("/:id/comments", async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
-        const data = readData();
+        const data = await readData();
         const article = (data.articles || []).find((a) => a.id === id);
 
         if (!article) {
@@ -74,8 +71,8 @@ router.get("/:id/comments", (req, res, next) => {
     }
 });
 
-//4. POST /articles
-router.post("/", (req, res, next) => {
+// 4. POST /articles
+router.post("/", async (req, res, next) => {
     try {
         const { title, content, author, date } = req.body;
 
@@ -85,7 +82,7 @@ router.post("/", (req, res, next) => {
             return next(error);
         }
 
-        const data = readData();
+        const data = await readData();
         const articles = data.articles || [];
 
         const newId =
@@ -101,7 +98,7 @@ router.post("/", (req, res, next) => {
 
         articles.push(newArticle);
         data.articles = articles;
-        writeData(data);
+        await writeData(data);
 
         res.status(201).json(newArticle);
     } catch (err) {
@@ -109,13 +106,13 @@ router.post("/", (req, res, next) => {
     }
 });
 
-//5. PUT /articles/:id, PUT /article/1, PUT /article/999
-router.put("/:id", (req, res, next) => {
+// 5. PUT /articles/:id
+router.put("/:id", async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
         const { title, content, author, date } = req.body;
 
-        const data = readData();
+        const data = await readData();
         const articles = data.articles || [];
         const article = articles.find((a) => a.id === id);
 
@@ -130,7 +127,7 @@ router.put("/:id", (req, res, next) => {
         if (author) article.author = author;
         if (date) article.date = date;
 
-        writeData(data);
+        await writeData(data);
 
         res.json(article);
     } catch (err) {
@@ -138,11 +135,11 @@ router.put("/:id", (req, res, next) => {
     }
 });
 
-//7. DELETE /articles/:id, DELETE /article/1, DELETE /article/999
-router.delete("/:id", (req, res, next) => {
+// 6. DELETE /articles/:id
+router.delete("/:id", async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
-        const data = readData();
+        const data = await readData();
         const articles = data.articles || [];
         const index = articles.findIndex((a) => a.id === id);
 
@@ -154,7 +151,7 @@ router.delete("/:id", (req, res, next) => {
 
         const deletedArticle = articles.splice(index, 1)[0];
         data.articles = articles;
-        writeData(data);
+        await writeData(data);
 
         res.json(deletedArticle);
     } catch (err) {

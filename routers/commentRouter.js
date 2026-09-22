@@ -1,36 +1,36 @@
 const express = require("express");
 const router = express.Router();
-const fs = require("fs");
+const fs = require("fs").promises;
 const path = require("path");
 
 const dataPath = path.join(__dirname, "../data.json");
 
 
-const readData = () => {
-    const rawData = fs.readFileSync(dataPath, "utf-8");
+const readData = async () => {
+    const rawData = await fs.readFile(dataPath, "utf-8");
     return JSON.parse(rawData);
 };
 
 
-const writeData = (data) => {
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), "utf-8");
+const writeData = async (data) => {
+    await fs.writeFile(dataPath, JSON.stringify(data, null, 2), "utf-8");
 };
 
-//1. GET /comments 
-router.get("/", (req, res, next) => {
+// 1. GET /comments 
+router.get("/", async (req, res, next) => {
     try {
-        const data = readData();
+        const data = await readData();
         res.json(data.comments || []);
     } catch (err) {
         next(err);
     }
 });
 
-//2. GET /comments/:id 
-router.get("/:id", (req, res, next) => {
+// 2. GET /comments/:id 
+router.get("/:id", async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
-        const data = readData();
+        const data = await readData();
         const comment = (data.comments || []).find((c) => c.id === id);
 
         if (!comment) {
@@ -45,8 +45,8 @@ router.get("/:id", (req, res, next) => {
     }
 });
 
-//3. POST /comments
-router.post("/", (req, res, next) => {
+// 3. POST /comments
+router.post("/", async (req, res, next) => {
     try {
         const { articleId, author, content } = req.body;
 
@@ -56,7 +56,7 @@ router.post("/", (req, res, next) => {
             return next(error);
         }
 
-        const data = readData();
+        const data = await readData();
         const articles = data.articles || [];
         const comments = data.comments || [];
 
@@ -79,7 +79,7 @@ router.post("/", (req, res, next) => {
 
         comments.push(newComment);
         data.comments = comments;
-        writeData(data);
+        await writeData(data);
 
         res.status(201).json(newComment);
     } catch (err) {
@@ -87,13 +87,13 @@ router.post("/", (req, res, next) => {
     }
 });
 
-//4. PUT /comments/:id 
-router.put("/:id", (req, res, next) => {
+// 4. PUT /comments/:id 
+router.put("/:id", async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
         const { author, content } = req.body;
 
-        const data = readData();
+        const data = await readData();
         const comments = data.comments || [];
         const comment = comments.find((c) => c.id === id);
 
@@ -106,7 +106,7 @@ router.put("/:id", (req, res, next) => {
         if (author) comment.author = author;
         if (content) comment.content = content;
 
-        writeData(data);
+        await writeData(data);
 
         res.json(comment);
     } catch (err) {
@@ -114,11 +114,11 @@ router.put("/:id", (req, res, next) => {
     }
 });
 
-//5. DELETE /comments/:id
-router.delete("/:id", (req, res, next) => {
+// 5. DELETE /comments/:id
+router.delete("/:id", async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
-        const data = readData();
+        const data = await readData();
         const comments = data.comments || [];
         const index = comments.findIndex((c) => c.id === id);
 
@@ -130,7 +130,7 @@ router.delete("/:id", (req, res, next) => {
 
         const deletedComment = comments.splice(index, 1)[0];
         data.comments = comments;
-        writeData(data);
+        await writeData(data);
 
         res.json(deletedComment);
     } catch (err) {
