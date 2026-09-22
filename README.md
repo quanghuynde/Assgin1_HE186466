@@ -21,6 +21,7 @@ GET /articles/:id
 ![alt text](getArticleById1.png)
 ![alt text](getArticleById999.png)
 GET /articles/:id/comments
+![alt text](getArticleByComment.png)
 POST /articles
 ![alt text](postArticle.png)
 ![alt text](postLackData.png)
