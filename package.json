@@ -1,0 +1,12 @@
+{
+    "name": "node-express",
+    "version": "1.0.0",
+    "description": "Exercise 7 - Handling Errors",
+    "main": "app.js",
+    "scripts": {
+        "start": "node app.js"
+    },
+    "dependencies": {
+        "express": "^4.21.2"
+    }
+}
